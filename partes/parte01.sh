@@ -1,0 +1,274 @@
+cat > /tmp/mudancas.patch <<'FIM_ARQUIVO_PW'
+diff --git a/configuracoes.html b/configuracoes.html
+new file mode 100644
+index 0000000..eeed947
+--- /dev/null
++++ b/configuracoes.html
+@@ -0,0 +1,90 @@
++<!doctype html>
++<html lang="pt-BR">
++<head>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1">
++  <title>Configurações | Protese Web</title>
++  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
++  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
++  <link rel="stylesheet" href="css/estilo.css">
++</head>
++<body class="carregando">
++  <header id="topo"></header>
++  <div class="aviso-wrapper"><div id="aviso-assinatura" hidden role="status"></div></div>
++
++  <main class="conteudo">
++    <h1 class="h3 mb-1">Configurações do laboratório</h1>
++    <p class="text-secondary mb-4">Esses dados aparecem no topo do sistema e nas notas impressas das ordens de serviço.</p>
++
++    <div id="aviso-somente-dono" class="alert alert-info" hidden>
++      <i class="bi bi-lock"></i> Só o dono do laboratório pode alterar estas informações.
++    </div>
++
++    <div class="row g-4">
++      <!-- Logo -->
++      <div class="col-lg-4">
++        <div class="card cartao-painel h-100">
++          <div class="card-body text-center">
++            <h2 class="h6 text-start mb-3"><i class="bi bi-image text-primary"></i> Logo</h2>
++            <div class="logo-preview mx-auto mb-3" id="logo-preview">
++              <img id="logo-img" alt="Logo do laboratório" hidden>
++              <span id="logo-vazio" class="text-secondary small"><i class="bi bi-image fs-1 d-block"></i>Sem logo</span>
++            </div>
++            <input type="file" id="logo-arquivo" accept="image/png,image/jpeg,image/webp" hidden>
++            <div class="d-flex justify-content-center gap-2 flex-wrap so-dono">
++              <button type="button" class="btn btn-primary btn-sm" id="btn-trocar-logo"><i class="bi bi-upload"></i> Trocar logo</button>
++              <button type="button" class="btn btn-outline-danger btn-sm" id="btn-remover-logo" hidden><i class="bi bi-trash"></i> Remover</button>
++            </div>
++            <p class="form-text mt-2 mb-0">PNG, JPG ou WEBP de até 1 MB. Prefira fundo transparente.</p>
++            <div id="alerta-logo" class="mt-3 text-start" hidden role="alert"></div>
++          </div>
++        </div>
++      </div>
++
++      <!-- Dados -->
++      <div class="col-lg-8">
++        <form id="form-lab" class="card cartao-painel" novalidate>
++          <div class="card-body">
++            <h2 class="h6 mb-3"><i class="bi bi-building text-primary"></i> Dados do laboratório</h2>
++            <div id="alerta-lab" hidden role="alert"></div>
++            <div class="row g-3">
++              <div class="col-md-7">
++                <label for="nome" class="form-label">Nome do laboratório</label>
++                <input type="text" class="form-control" id="nome" name="nome" maxlength="120" required>
++                <div class="invalid-feedback">Informe o nome.</div>
++              </div>
++              <div class="col-md-5">
++                <label for="documento" class="form-label">CNPJ ou CPF</label>
++                <input type="text" class="form-control" id="documento" name="documento" maxlength="20" inputmode="numeric">
++              </div>
++              <div class="col-md-7">
++                <label for="email" class="form-label">E-mail</label>
++                <input type="email" class="form-control" id="email" name="email" maxlength="120" required>
++                <div class="invalid-feedback">Informe um e-mail válido.</div>
++              </div>
++              <div class="col-md-5">
++                <label for="telefone" class="form-label">Telefone / WhatsApp</label>
++                <input type="tel" class="form-control" id="telefone" name="telefone" maxlength="20">
++              </div>
++              <div class="col-md-8">
++                <label for="endereco" class="form-label">Endereço</label>
++                <input type="text" class="form-control" id="endereco" name="endereco" maxlength="200" placeholder="Rua, número, bairro">
++              </div>
++              <div class="col-md-4">
++                <label for="cidade" class="form-label">Cidade / UF</label>
++                <input type="text" class="form-control" id="cidade" name="cidade" maxlength="80" placeholder="Ex.: Campinas - SP">
++              </div>
++            </div>
++          </div>
++          <div class="card-footer bg-transparent text-end so-dono">
++            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Salvar alterações</button>
++          </div>
++        </form>
++      </div>
++    </div>
++  </main>
++
++  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
++  <script type="module" src="js/paginas/configuracoes.js"></script>
++</body>
++</html>
+diff --git a/css/estilo.css b/css/estilo.css
+index f10ac54..d2c4136 100644
+--- a/css/estilo.css
++++ b/css/estilo.css
+@@ -938,3 +938,257 @@ body:not(.modo-tecnico) .so-tecnico {
+   .kpi-icone { width: 2rem; height: 2rem; font-size: 0.95rem; }
+   .kpi .selo-txt { display: none; }
+ }
++
++/* Logo do laboratório no topo */
++#topo [data-logo-lab] {
++  height: 30px;
++  max-width: 120px;
++  object-fit: contain;
++  margin-right: 0.25rem;
++  vertical-align: middle;
++}
++
++/* Configurações */
++.logo-preview {
++  width: 180px;
++  height: 180px;
++  display: grid;
++  place-items: center;
++  border-radius: 1rem;
++  border: 2px dashed #d0d5dd;
++  background: #fafbff;
++  overflow: hidden;
++}
++
++.logo-preview img {
++  max-width: 90%;
++  max-height: 90%;
++  object-fit: contain;
++}
++
++/* =========================================================
++   Nota impressa da OS
++   ========================================================= */
++.pagina-nota {
++  background: #eef0f5;
++}
++
++.nota-acoes {
++  position: sticky;
++  top: 0;
++  z-index: 10;
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 1rem;
++  padding: 0.75rem 1rem;
++  background: rgba(255, 255, 255, 0.9);
++  backdrop-filter: blur(8px);
++  border-bottom: 1px solid #e4e7ec;
++}
++
++.nota {
++  max-width: 210mm;
++  min-height: 270mm;
++  margin: 1.5rem auto;
++  padding: 14mm 14mm 10mm;
++  background: #fff;
++  color: #1d2939;
++  box-shadow: 0 20px 50px -20px rgba(16, 24, 40, 0.3);
++  border-radius: 0.5rem;
++  font-size: 0.9rem;
++  display: flex;
++  flex-direction: column;
++}
++
++.nota-cabecalho {
++  display: flex;
++  justify-content: space-between;
++  gap: 1.5rem;
++  padding-bottom: 1rem;
++  border-bottom: 3px solid transparent;
++  border-image: var(--grad-primario) 1;
++}
++
++.nota-lab {
++  display: flex;
++  gap: 1rem;
++  align-items: center;
++}
++
++.nota-logo {
++  max-height: 70px;
++  max-width: 140px;
++  object-fit: contain;
++}
++
++.nota-lab h1 {
++  color: #101828;
++  font-size: 1.35rem;
++  font-weight: 700;
++  margin: 0 0 0.2rem;
++}
++
++.nota-lab-dados {
++  font-size: 0.78rem;
++  color: #475467;
++}
++
++.nota-numero {
++  text-align: right;
++  white-space: nowrap;
++}
++
++.nota-numero span {
++  display: block;
++  font-size: 0.75rem;
++  text-transform: uppercase;
++  letter-spacing: 0.06em;
++  color: #667085;
++}
++
++.nota-numero strong {
++  display: block;
++  font-size: 1.6rem;
++  color: var(--cor-primaria);
++}
++
++.nota-numero small {
++  color: #667085;
++}
++
++.nota-blocos {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 0.75rem;
++  margin: 1.1rem 0;
++}
++
++.nota-bloco {
++  padding: 0.6rem 0.75rem;
++  border: 1px solid #e4e7ec;
++  border-radius: 0.5rem;
++  font-size: 0.82rem;
++}
++
++.nota-bloco h2,
++.nota-obs h2 {
++  font-size: 0.68rem;
++  text-transform: uppercase;
++  letter-spacing: 0.06em;
++  color: #667085;
++  margin-bottom: 0.3rem;
++}
++
++.nota-bloco strong {
++  display: block;
++  font-size: 0.92rem;
++}
++
++.nota-bloco span,
++.nota-lab-dados span {
++  color: #667085;
++}
++
++.nota-tabela {
++  width: 100%;
++  border-collapse: collapse;
++}
++
++.nota-tabela th {
++  background: #f4f3ff;
++  color: #3730a3;
++  font-size: 0.72rem;
++  text-transform: uppercase;
++  letter-spacing: 0.04em;
++  padding: 0.5rem 0.6rem;
++}
++
++.nota-tabela td {
++  padding: 0.55rem 0.6rem;
+FIM_ARQUIVO_PW
