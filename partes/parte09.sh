@@ -1,0 +1,114 @@
+cat > "servicos.html" <<'FIM_ARQUIVO_PW'
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Serviços | Protese Web</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="carregando">
+  <header id="topo"></header>
+  <div class="aviso-wrapper"><div id="aviso-assinatura" hidden role="status"></div></div>
+
+  <main class="conteudo">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <h1 class="h3 mb-0 me-auto">Serviços</h1>
+      <button id="btn-novo" class="btn btn-primary" type="button" hidden>
+        <i class="bi bi-plus-lg"></i> Novo serviço
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+          <div class="input-group busca">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input id="busca" type="search" class="form-control" placeholder="Buscar serviço" aria-label="Buscar serviço">
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="mostrar-inativos">
+            <label class="form-check-label" for="mostrar-inativos">Mostrar inativos</label>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Serviço</th>
+                <th class="d-none d-md-table-cell">Descrição</th>
+                <th class="text-end">Preço padrão</th>
+                <th class="text-center d-none d-sm-table-cell">Prazo</th>
+                <th class="text-center">Situação</th>
+                <th class="col-acoes"></th>
+              </tr>
+            </thead>
+            <tbody id="lista"></tbody>
+          </table>
+        </div>
+        <p id="vazio" class="text-secondary text-center py-4 mb-0" hidden></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de cadastro/edição -->
+  <div class="modal fade" id="modal-servico" tabindex="-1" aria-labelledby="titulo-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="form-servico" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-modal">Novo serviço</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body vstack gap-3">
+          <div id="alerta-servico" hidden role="alert"></div>
+
+          <div>
+            <label for="nome" class="form-label">Nome do serviço</label>
+            <input type="text" class="form-control" id="nome" name="nome" maxlength="120" required
+                   placeholder="Ex.: Coroa metalocerâmica">
+            <div class="invalid-feedback">Informe o nome do serviço.</div>
+          </div>
+
+          <div>
+            <label for="descricao" class="form-label">Descrição <span class="text-secondary">(opcional)</span></label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="2" maxlength="500"></textarea>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label for="preco_padrao" class="form-label">Preço padrão</label>
+              <div class="input-group has-validation">
+                <span class="input-group-text">R$</span>
+                <input type="text" class="form-control" id="preco_padrao" name="preco_padrao" inputmode="decimal"
+                       placeholder="0,00" required>
+                <div class="invalid-feedback">Informe um valor válido.</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label for="prazo_padrao_dias" class="form-label">Prazo padrão <span class="text-secondary">(dias)</span></label>
+              <input type="number" class="form-control" id="prazo_padrao_dias" name="prazo_padrao_dias" min="0" max="365" step="1">
+              <div class="invalid-feedback">Informe de 0 a 365 dias.</div>
+            </div>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="ativo" name="ativo" checked>
+            <label class="form-check-label" for="ativo">Ativo (aparece ao lançar ordens de serviço)</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/paginas/servicos.js"></script>
+</body>
+</html>
+FIM_ARQUIVO_PW
