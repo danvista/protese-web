@@ -59,6 +59,87 @@ export async function salvarDentista(dados, id = null) {
   if (error) throw erroAmigavel(error);
 }
 
+// ---------------- Equipe ----------------
+
+export async function listarUsuarios() {
+  const { data, error } = await supabase.from('usuarios').select('id, nome, papel, ativo').eq('ativo', true).order('nome');
+  if (error) throw erroAmigavel(error);
+  return data;
+}
+
+// ---------------- Ordens de serviço ----------------
+
+const CAMPOS_OS = `id, numero, dentista_id, tecnico_responsavel_id, paciente, cor, observacoes, status,
+  data_entrada, prazo_entrega, data_entrega, desconto, valor_total,
+  dentista:dentistas(nome, clinica),
+  tecnico:usuarios(nome),
+  itens:itens_ordem_servico(id, servico_id, dentes, quantidade, valor_unitario, valor_total, servico:servicos(nome))`;
+
+export async function listarOrdens() {
+  const { data, error } = await supabase
+    .from('ordens_servico')
+    .select(CAMPOS_OS)
+    .order('numero', { ascending: false })
+    .limit(500);
+  if (error) throw erroAmigavel(error);
+  return data;
+}
+
+export async function obterOrdem(id) {
+  const { data, error } = await supabase.from('ordens_servico').select(CAMPOS_OS).eq('id', id).single();
+  if (error) throw erroAmigavel(error);
+  return data;
+}
+
+/**
+ * Cria ou edita a OS e substitui os itens.
+ * itens: [{ servico_id, dentes, quantidade, valor_unitario? }] — sem valor_unitario o banco usa a tabela de preços.
+ */
+export async function salvarOrdem(dados, itens, id = null) {
+  if (!itens.length) throw new Error('Adicione pelo menos um serviço na ordem.');
+
+  let ordemId = id;
+  if (id) {
+    const { error } = await supabase.from('ordens_servico').update(dados).eq('id', id);
+    if (error) throw erroAmigavel(error);
+    const { error: erroItens } = await supabase.from('itens_ordem_servico').delete().eq('ordem_servico_id', id);
+    if (erroItens) throw erroAmigavel(erroItens);
+  } else {
+    const { data, error } = await supabase.from('ordens_servico').insert(dados).select('id').single();
+    if (error) throw erroAmigavel(error);
+    ordemId = data.id;
+  }
+
+  const linhas = itens.map((item) => {
+    const linha = {
+      ordem_servico_id: ordemId,
+      servico_id: item.servico_id,
+      dentes: item.dentes || null,
+      quantidade: item.quantidade,
+    };
+    if (item.valor_unitario != null) linha.valor_unitario = item.valor_unitario;
+    return linha;
+  });
+  const { error: erroInsert } = await supabase.from('itens_ordem_servico').insert(linhas);
+  if (erroInsert) throw erroAmigavel(erroInsert);
+  return ordemId;
+}
+
+export async function alterarStatusOrdem(id, status) {
+  const { error } = await supabase.from('ordens_servico').update({ status }).eq('id', id);
+  if (error) throw erroAmigavel(error);
+}
+
+export async function listarHistorico(ordemId) {
+  const { data, error } = await supabase
+    .from('historico_etapas')
+    .select('status_anterior, status_novo, criado_em, usuario:usuarios(nome)')
+    .eq('ordem_servico_id', ordemId)
+    .order('criado_em', { ascending: false });
+  if (error) throw erroAmigavel(error);
+  return data;
+}
+
 // ---------------- Tabela de preços por dentista ----------------
 
 /** Retorna Map servico_id -> preço especial do dentista. */

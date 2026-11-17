@@ -8,6 +8,7 @@ const UM_DIA_MS = 24 * 60 * 60 * 1000;
 // Itens do menu: { id, rotulo, icone, pagina }. Novas telas entram aqui.
 const MENU = [
   { id: 'inicio', rotulo: 'Início', icone: 'bi-house', pagina: 'inicio.html' },
+  { id: 'ordens', rotulo: 'Ordens de serviço', icone: 'bi-clipboard2-pulse', pagina: 'ordens.html' },
   { id: 'dentistas', rotulo: 'Dentistas', icone: 'bi-person-vcard', pagina: 'dentistas.html' },
   { id: 'servicos', rotulo: 'Serviços', icone: 'bi-tools', pagina: 'servicos.html' },
 ];

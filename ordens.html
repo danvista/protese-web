@@ -1,5 +1,3 @@
-mkdir -p "."
-cat > "ordens.html" <<'FIM_ARQUIVO_PW'
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -140,8 +138,6 @@ cat > "ordens.html" <<'FIM_ARQUIVO_PW'
               <div class="card cartao-suave">
                 <div class="card-body">
                   <h3 class="h6">Etapa</h3>
-FIM_ARQUIVO_PW
-cat >> "ordens.html" <<'FIM_ARQUIVO_PW'
                   <select class="form-select mb-2" id="status" aria-label="Etapa da ordem"></select>
                   <button type="button" class="btn btn-success w-100 btn-animado" id="btn-avancar"></button>
                   <hr>
@@ -179,4 +175,3 @@ cat >> "ordens.html" <<'FIM_ARQUIVO_PW'
   <script type="module" src="js/paginas/ordens.js"></script>
 </body>
 </html>
-FIM_ARQUIVO_PW
