@@ -1,0 +1,156 @@
+cat > "dentistas.html" <<'FIM_ARQUIVO_PW'
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dentistas | Protese Web</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="carregando">
+  <header id="topo"></header>
+  <div class="aviso-wrapper"><div id="aviso-assinatura" hidden role="status"></div></div>
+
+  <main class="conteudo">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <h1 class="h3 mb-0 me-auto">Dentistas</h1>
+      <button id="btn-novo" class="btn btn-primary" type="button" hidden>
+        <i class="bi bi-plus-lg"></i> Novo dentista
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+          <div class="input-group busca">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input id="busca" type="search" class="form-control" placeholder="Buscar por nome, clínica ou CRO" aria-label="Buscar dentista">
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="mostrar-inativos">
+            <label class="form-check-label" for="mostrar-inativos">Mostrar inativos</label>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Dentista</th>
+                <th class="d-none d-md-table-cell">Clínica</th>
+                <th class="d-none d-lg-table-cell">CRO</th>
+                <th class="d-none d-sm-table-cell">Telefone</th>
+                <th class="text-center">Situação</th>
+                <th class="col-acoes"></th>
+              </tr>
+            </thead>
+            <tbody id="lista"></tbody>
+          </table>
+        </div>
+        <p id="vazio" class="text-secondary text-center py-4 mb-0" hidden></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de cadastro/edição -->
+  <div class="modal fade" id="modal-dentista" tabindex="-1" aria-labelledby="titulo-modal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form id="form-dentista" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-modal">Novo dentista</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="alerta-dentista" hidden role="alert"></div>
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label for="nome" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="nome" name="nome" maxlength="120" required placeholder="Ex.: Dr. Carlos Souza">
+              <div class="invalid-feedback">Informe o nome do dentista.</div>
+            </div>
+            <div class="col-md-4">
+              <label for="cro" class="form-label">CRO <span class="text-secondary">(opcional)</span></label>
+              <input type="text" class="form-control" id="cro" name="cro" maxlength="30" placeholder="Ex.: SP-12345">
+            </div>
+            <div class="col-md-6">
+              <label for="clinica" class="form-label">Clínica <span class="text-secondary">(opcional)</span></label>
+              <input type="text" class="form-control" id="clinica" name="clinica" maxlength="120">
+            </div>
+            <div class="col-md-6">
+              <label for="telefone" class="form-label">Telefone / WhatsApp <span class="text-secondary">(opcional)</span></label>
+              <input type="tel" class="form-control" id="telefone" name="telefone" maxlength="16" placeholder="(11) 98765-4321">
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">E-mail <span class="text-secondary">(opcional)</span></label>
+              <input type="email" class="form-control" id="email" name="email" maxlength="120">
+              <div class="invalid-feedback">E-mail inválido.</div>
+            </div>
+            <div class="col-md-6">
+              <label for="endereco" class="form-label">Endereço <span class="text-secondary">(para coleta/entrega)</span></label>
+              <input type="text" class="form-control" id="endereco" name="endereco" maxlength="200">
+            </div>
+            <div class="col-12">
+              <label for="observacoes" class="form-label">Observações <span class="text-secondary">(opcional)</span></label>
+              <textarea class="form-control" id="observacoes" name="observacoes" rows="2" maxlength="500"></textarea>
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="ativo" name="ativo" checked>
+                <label class="form-check-label" for="ativo">Ativo (aparece ao lançar ordens de serviço)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal da tabela de preços do dentista -->
+  <div class="modal fade" id="modal-precos" tabindex="-1" aria-labelledby="titulo-precos" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <form id="form-precos" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-precos">Tabela de preços</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-secondary small">
+            Deixe em branco para usar o preço padrão do serviço. Preencha só os serviços com valor diferente para este dentista.
+          </p>
+          <div id="alerta-precos" hidden role="alert"></div>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Serviço</th>
+                  <th class="text-end">Preço padrão</th>
+                  <th class="text-end">Preço deste dentista</th>
+                </tr>
+              </thead>
+              <tbody id="lista-precos"></tbody>
+            </table>
+          </div>
+          <p id="precos-vazio" class="text-secondary text-center py-3 mb-0" hidden>
+            Nenhum serviço ativo. Cadastre os serviços primeiro em <a href="servicos.html">Serviços</a>.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar preços</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/paginas/dentistas.js"></script>
+</body>
+</html>
+FIM_ARQUIVO_PW
