@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Financeiro | Protese Web</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="carregando">
+  <header id="topo"></header>
+  <div class="aviso-wrapper"><div id="aviso-assinatura" hidden role="status"></div></div>
+
+  <main class="conteudo entrada">
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+      <div class="me-auto">
+        <h1 class="h3 mb-0">Financeiro</h1>
+        <p class="text-secondary small mb-0">Fatura do mês para cada dentista, com tudo o que foi entregue para ele.</p>
+      </div>
+      <div class="nav-mes" role="group" aria-label="Mês">
+        <button type="button" class="btn" id="mes-anterior" aria-label="Mês anterior"><i class="bi bi-chevron-left"></i></button>
+        <strong id="mes-titulo"></strong>
+        <button type="button" class="btn" id="mes-seguinte" aria-label="Próximo mês"><i class="bi bi-chevron-right"></i></button>
+      </div>
+      <button type="button" class="btn btn-primary btn-animado" id="btn-gerar-todas" hidden>
+        <i class="bi bi-receipt"></i> Gerar faturas do mês
+      </button>
+    </div>
+
+    <div id="alerta" hidden role="alert"></div>
+
+    <section class="grade-kpi mb-4" id="kpis"></section>
+
+    <div class="row g-4">
+      <div class="col-xl-8">
+        <div class="card cartao-painel">
+          <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <h2 class="h6 mb-0 me-auto"><i class="bi bi-people text-primary"></i> Dentistas no mês</h2>
+              <span class="small text-secondary" id="aviso-pendentes"></span>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-middle mb-0 tabela-financeiro">
+                <thead>
+                  <tr>
+                    <th>Dentista</th>
+                    <th class="text-center">OS</th>
+                    <th class="text-end">Valor</th>
+                    <th>Fatura</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="linhas"></tbody>
+              </table>
+            </div>
+            <div id="vazio" class="estado-vazio" hidden>
+              <i class="bi bi-receipt"></i>
+              <p class="mb-0">Nenhuma OS entregue neste mês.</p>
+              <p class="small text-secondary mb-0">A fatura junta as ordens marcadas como <strong>Entregue</strong> no mês.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <div class="card cartao-painel">
+          <div class="card-body">
+            <h2 class="h6 mb-3"><i class="bi bi-exclamation-circle text-primary"></i> A receber de meses anteriores</h2>
+            <ul class="lista-atrasadas" id="anteriores"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Gerar fatura -->
+  <div class="modal fade" id="modal-gerar" tabindex="-1" aria-labelledby="titulo-gerar" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="form-gerar" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-gerar">Gerar fatura</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="alerta-gerar" hidden role="alert"></div>
+          <p id="texto-gerar" class="mb-3"></p>
+          <label for="vencimento" class="form-label">Vencimento</label>
+          <input type="text" class="form-control" id="vencimento" name="vencimento" required>
+          <div class="invalid-feedback">Escolha o vencimento.</div>
+          <p class="form-text mb-0">Se uma OS deste mês for entregue depois, é só clicar em <strong>Atualizar</strong> que ela entra na fatura.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-receipt"></i> <span id="rotulo-gerar">Gerar</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pagamentos -->
+  <div class="modal fade" id="modal-pagamento" tabindex="-1" aria-labelledby="titulo-pagamento" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <form id="form-pagamento" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-pagamento">Receber pagamento</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="alerta-pagamento" hidden role="alert"></div>
+          <div class="resumo-fatura mb-3" id="resumo-fatura"></div>
+
+          <div id="novo-pagamento" class="row g-3">
+            <div class="col-md-4">
+              <label for="valor" class="form-label">Valor recebido</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="text" class="form-control" id="valor" name="valor" inputmode="decimal" required>
+              </div>
+              <div class="invalid-feedback" id="erro-valor">Informe um valor maior que zero.</div>
+            </div>
+            <div class="col-md-4">
+              <label for="data-pagamento" class="form-label">Data</label>
+              <input type="text" class="form-control" id="data-pagamento" name="data" required>
+            </div>
+            <div class="col-md-4">
+              <label for="forma" class="form-label">Forma</label>
+              <select class="form-select" id="forma" name="forma" required></select>
+            </div>
+            <div class="col-12">
+              <label for="observacao" class="form-label">Observação <span class="text-secondary small">(opcional)</span></label>
+              <input type="text" class="form-control" id="observacao" name="observacao" maxlength="200">
+            </div>
+          </div>
+
+          <h3 class="h6 mt-4 mb-2">Pagamentos lançados</h3>
+          <ul class="lista-pagamentos" id="pagamentos"></ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="submit" class="btn btn-primary" id="btn-registrar"><i class="bi bi-check2"></i> Registrar pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/paginas/financeiro.js"></script>
+</body>
+</html>

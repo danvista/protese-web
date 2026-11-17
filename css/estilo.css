@@ -1192,3 +1192,374 @@ body:not(.modo-tecnico) .so-tecnico {
   .nota-total, .nota-tabela th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .nota-cabecalho { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* =========================================================
+   Calendário (campos de data)
+   ========================================================= */
+.campo-data {
+  position: relative;
+}
+
+.botao-data {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+  cursor: pointer;
+  background: #fff;
+}
+
+.botao-data:disabled {
+  cursor: default;
+  background: var(--bs-secondary-bg, #e9ecef);
+}
+
+.botao-data .data-icone {
+  color: var(--cor-primaria);
+}
+
+.botao-data .data-texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.botao-data.vazio .data-texto {
+  color: #98a2b3;
+}
+
+.botao-data .data-seta {
+  font-size: 0.75rem;
+  color: #98a2b3;
+  transition: transform 0.2s var(--ease);
+}
+
+.botao-data.show .data-seta {
+  transform: rotate(180deg);
+}
+
+.data-selo {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.selo-ok { background: var(--cor-primaria-suave); color: var(--cor-primaria); }
+.selo-breve { background: #e0f2fe; color: #0369a1; }
+.selo-hoje { background: #fef3c7; color: #92400e; }
+.selo-passou { background: #fee2e2; color: #b91c1c; }
+
+.was-validated .campo-data:has(input:invalid) .botao-data {
+  border-color: var(--bs-form-invalid-border-color, #dc3545);
+}
+
+.was-validated .campo-data:has(input:invalid) + .invalid-feedback {
+  display: block;
+}
+
+.calendario {
+  width: 19rem;
+  padding: 0.85rem;
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: var(--sombra-2), 0 0 0 1px rgba(16, 24, 40, 0.06);
+}
+
+.calendario.show > * {
+  animation: surgir 0.18s var(--ease) backwards;
+}
+
+.cal-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.cal-titulo {
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.cal-titulo span {
+  color: #98a2b3;
+  font-weight: 500;
+}
+
+.cal-nav {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #475467;
+  transition: background-color 0.15s;
+}
+
+.cal-nav:hover {
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+}
+
+.cal-semana,
+.cal-grade {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.15rem;
+  text-align: center;
+}
+
+.cal-semana span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #98a2b3;
+  padding-bottom: 0.3rem;
+}
+
+.cal-dia {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  font-size: 0.88rem;
+  color: #1d2939;
+  transition: background-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.cal-dia:hover:not(:disabled) {
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+}
+
+.cal-dia:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 1px;
+}
+
+.cal-dia.fds { color: #98a2b3; }
+.cal-dia.fora { color: #d0d5dd; }
+
+.cal-dia.hoje {
+  font-weight: 700;
+  color: var(--cor-primaria);
+  box-shadow: inset 0 0 0 1.5px var(--cor-primaria);
+}
+
+.cal-dia.selecionado,
+.cal-dia.selecionado:hover {
+  background: var(--grad-primario, var(--cor-primaria));
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 10px -3px rgba(79, 70, 229, 0.55);
+}
+
+.cal-dia:disabled {
+  color: #e4e7ec;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.cal-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid #eaecf0;
+}
+
+.cal-atalho {
+  border: 1px solid #e4e7ec;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.78rem;
+  color: #344054;
+  transition: all 0.15s;
+}
+
+.cal-atalho:hover:not(:disabled) {
+  border-color: var(--cor-primaria);
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+}
+
+.cal-atalho:disabled {
+  opacity: 0.4;
+}
+
+/* =========================================================
+   Financeiro
+   ========================================================= */
+.nav-mes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: var(--sombra-1);
+}
+
+.nav-mes strong {
+  min-width: 10.5rem;
+  text-align: center;
+}
+
+.nav-mes .btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.nav-mes .btn:hover {
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+}
+
+.tabela-financeiro td {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+.tabela-financeiro tbody tr {
+  animation: surgir 0.35s var(--ease) backwards;
+}
+
+.lista-atrasadas,
+.lista-pagamentos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-atrasadas li,
+.lista-pagamentos li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.lista-atrasadas li:last-child,
+.lista-pagamentos li:last-child {
+  border-bottom: 0;
+}
+
+.pag-icone {
+  display: inline-grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.resumo-fatura {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  background: var(--cor-primaria-suave);
+}
+
+.resumo-fatura > div span:first-child {
+  display: block;
+  font-size: 0.75rem;
+  color: #667085;
+}
+
+.resumo-fatura strong {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 576px) {
+  .resumo-fatura { grid-template-columns: 1fr 1fr; }
+}
+
+/* Fatura impressa (usa a base da nota) */
+.fatura-blocos {
+  grid-template-columns: 2fr 1.4fr 1fr;
+}
+
+.bloco-vencimento {
+  text-align: center;
+  background: #f9fafb;
+}
+
+.situacao {
+  display: inline-block;
+  margin-top: 0.3rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.situacao-aberto { background: #fef3c7; color: #92400e; }
+.situacao-parcial { background: #e0f2fe; color: #0369a1; }
+.situacao-pago { background: #dcfce7; color: #15803d; }
+
+.fatura-servicos {
+  list-style: none;
+  padding: 0;
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #475467;
+}
+
+.fatura-servicos span {
+  color: #98a2b3;
+}
+
+.fatura.sem-detalhe .detalhe {
+  display: none !important;
+}
+
+.fatura-pagamento {
+  border-style: solid;
+  border-color: #c7d2fe;
+  background: #f5f7ff;
+}
+
+.fatura .nota-rodape {
+  margin-top: auto;
+  padding-top: 2rem;
+}
+
+@media print {
+  .bloco-vencimento, .situacao, .fatura-pagamento { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 768px) {
+  .fatura-blocos { grid-template-columns: 1fr; }
+}
+
+/* Financeiro no celular: cada dentista vira um cartão */
+@media (max-width: 767.98px) {
+  .tabela-financeiro thead { display: none; }
+  .tabela-financeiro tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.35rem 0.75rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #eaecf0;
+  }
+  .tabela-financeiro td { display: block; border: 0; padding: 0 !important; text-align: left !important; }
+  .tabela-financeiro td:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .tabela-financeiro td:nth-child(3) { grid-column: 2; grid-row: 1; text-align: right !important; }
+  .tabela-financeiro td:nth-child(2) { grid-column: 1 / -1; font-size: 0.85rem; color: #667085; }
+  .tabela-financeiro td:nth-child(2)::before { content: 'OS entregues: '; }
+  .tabela-financeiro td:nth-child(2) div { display: inline; margin-left: 0.3rem; }
+  .tabela-financeiro td:nth-child(4),
+  .tabela-financeiro td:nth-child(5) { grid-column: 1 / -1; }
+  .tabela-financeiro td:nth-child(5) > div { justify-content: flex-start !important; }
+}

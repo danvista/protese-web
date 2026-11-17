@@ -11,6 +11,7 @@ const MENU = [
   { id: 'ordens', rotulo: 'Ordens de serviço', icone: 'bi-clipboard2-pulse', pagina: 'ordens.html' },
   { id: 'dentistas', rotulo: 'Dentistas', icone: 'bi-person-vcard', pagina: 'dentistas.html' },
   { id: 'servicos', rotulo: 'Serviços', icone: 'bi-tools', pagina: 'servicos.html' },
+  { id: 'financeiro', rotulo: 'Financeiro', icone: 'bi-cash-coin', pagina: 'financeiro.html', soGestor: true },
   { id: 'configuracoes', rotulo: 'Configurações', icone: 'bi-gear', pagina: 'configuracoes.html', soGestor: true },
 ];
 

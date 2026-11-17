@@ -15,6 +15,8 @@ function erroAmigavel(erro, mensagensUnicas = {}) {
       return new Error('Este registro está em uso e não pode ser alterado desta forma.');
     case '23514':
       return new Error('Algum valor informado é inválido.');
+    case 'P0001': // mensagem escrita pelo próprio banco (raise exception)
+      return new Error(erro.message);
     default:
       console.error(erro);
       return new Error('Não foi possível salvar. Tente novamente.');
@@ -61,7 +63,7 @@ export async function salvarDentista(dados, id = null) {
 
 // ---------------- Laboratório ----------------
 
-const CAMPOS_LAB = 'id, nome, documento, email, telefone, endereco, cidade, logo_url';
+const CAMPOS_LAB = 'id, nome, documento, email, telefone, endereco, cidade, logo_url, dados_pagamento';
 
 export async function obterLaboratorio() {
   const { data, error } = await supabase.from('laboratorios').select(CAMPOS_LAB).single();
@@ -249,3 +251,123 @@ export async function salvarPrecosDentista(dentistaId, precos) {
     if (error) throw erroAmigavel(error);
   }
 }
+
+// ---------------- Financeiro (faturas mensais por dentista) ----------------
+// competencia: "AAAA-MM-01". O mês vale pelo horário local (Brasil).
+
+function limitesDoMes(competencia) {
+  const [ano, mes] = competencia.split('-').map(Number);
+  return { inicio: new Date(ano, mes - 1, 1).toISOString(), fim: new Date(ano, mes, 1).toISOString() };
+}
+
+/** OS entregues no mês, faturas do mês, OS do mês ainda não entregues e faturas antigas em aberto. */
+export async function resumoFinanceiro(competencia) {
+  const { inicio, fim } = limitesDoMes(competencia);
+  const [entregues, faturas, pendentes, anteriores] = await Promise.all([
+    supabase
+      .from('ordens_servico')
+      .select('id, numero, dentista_id, valor_total, data_entrega, fechamento_id')
+      .eq('status', 'ENTREGUE')
+      .gte('data_entrega', inicio)
+      .lt('data_entrega', fim)
+      .limit(5000),
+    supabase
+      .from('fechamentos')
+      .select('id, dentista_id, competencia, valor_total, valor_pago, status, vencimento')
+      .eq('competencia', competencia),
+    supabase
+      .from('ordens_servico')
+      .select('id, dentista_id')
+      .in('status', ['RECEBIDO', 'EM_PRODUCAO', 'EM_PROVA', 'RETORNO', 'FINALIZADO'])
+      .gte('data_entrada', inicio)
+      .lt('data_entrada', fim)
+      .limit(5000),
+    supabase
+      .from('fechamentos')
+      .select('id, dentista_id, competencia, valor_total, valor_pago, status, vencimento')
+      .in('status', ['ABERTO', 'PARCIAL'])
+      .lt('competencia', competencia)
+      .order('competencia'),
+  ]);
+  for (const r of [entregues, faturas, pendentes, anteriores]) if (r.error) throw erroAmigavel(r.error);
+  return { entregues: entregues.data, faturas: faturas.data, pendentes: pendentes.data, anteriores: anteriores.data };
+}
+
+/** Gera (ou atualiza) a fatura do dentista no mês. Retorna o id. */
+export async function gerarFatura(dentistaId, competencia, vencimento = null) {
+  const { data, error } = await supabase.rpc('gerar_fechamento', {
+    p_dentista_id: dentistaId,
+    p_competencia: competencia,
+    p_vencimento: vencimento,
+  });
+  if (error) throw erroAmigavel(error);
+  return data;
+}
+
+export async function alterarVencimento(faturaId, vencimento) {
+  const { error } = await supabase.from('fechamentos').update({ vencimento }).eq('id', faturaId);
+  if (error) throw erroAmigavel(error);
+}
+
+export async function excluirFatura(faturaId) {
+  const { error } = await supabase.from('fechamentos').delete().eq('id', faturaId);
+  if (error) throw erroAmigavel(error);
+}
+
+/** Fatura completa: dados, dentista, OS com serviços e pagamentos. */
+export async function obterFatura(id) {
+  const fatura = await supabase
+    .from('fechamentos')
+    .select('id, dentista_id, competencia, valor_total, valor_pago, status, vencimento, criado_em, atualizado_em')
+    .eq('id', id)
+    .single();
+  if (fatura.error) throw erroAmigavel(fatura.error);
+  const [dentista, ordens, pagamentos] = await Promise.all([
+    supabase.from('dentistas').select('nome, clinica, cro, telefone, email, endereco').eq('id', fatura.data.dentista_id).single(),
+    supabase
+      .from('ordens_servico')
+      .select(`id, numero, paciente, data_entrada, data_entrega, desconto, valor_total,
+        itens:itens_ordem_servico(quantidade, dentes, valor_total, servico:servicos(nome))`)
+      .eq('fechamento_id', id)
+      .order('data_entrega'),
+    listarPagamentos(id),
+  ]);
+  if (dentista.error) throw erroAmigavel(dentista.error);
+  if (ordens.error) throw erroAmigavel(ordens.error);
+  return { ...fatura.data, dentista: dentista.data, ordens: ordens.data, pagamentos };
+}
+
+export async function listarPagamentos(faturaId) {
+  const { data, error } = await supabase
+    .from('pagamentos')
+    .select('id, valor, data, forma, observacao')
+    .eq('fechamento_id', faturaId)
+    .order('data');
+  if (error) throw erroAmigavel(error);
+  return data;
+}
+
+export async function registrarPagamento(faturaId, { valor, data, forma, observacao }) {
+  const { error } = await supabase.from('pagamentos').insert({ fechamento_id: faturaId, valor, data, forma, observacao: observacao || null });
+  if (error) throw erroAmigavel(error);
+}
+
+export async function excluirPagamento(id) {
+  const { error } = await supabase.from('pagamentos').delete().eq('id', id);
+  if (error) throw erroAmigavel(error);
+}
+
+export const FORMAS_PAGAMENTO = {
+  PIX: 'PIX',
+  DINHEIRO: 'Dinheiro',
+  TRANSFERENCIA: 'Transferência',
+  BOLETO: 'Boleto',
+  CARTAO: 'Cartão',
+  OUTRO: 'Outro',
+};
+
+export const SITUACAO_FATURA = {
+  ABERTO: { rotulo: 'Em aberto', cor: 'warning', icone: 'bi-hourglass-split' },
+  PARCIAL: { rotulo: 'Pago em parte', cor: 'info', icone: 'bi-pie-chart' },
+  PAGO: { rotulo: 'Paga', cor: 'success', icone: 'bi-check2-circle' },
+};

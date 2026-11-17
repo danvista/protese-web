@@ -71,7 +71,17 @@
                   <input type="text" class="form-control" id="paciente" name="paciente" maxlength="120" required>
                   <div class="invalid-feedback">Informe o paciente.</div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-6">
+                  <label for="entrada" class="form-label">Data de entrada</label>
+                  <input type="text" class="form-control" id="entrada" name="entrada" required>
+                  <div class="invalid-feedback">Informe a data de entrada.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="prazo" class="form-label">Prazo de entrega</label>
+                  <input type="text" class="form-control" id="prazo" name="prazo" required>
+                  <div class="invalid-feedback" id="erro-prazo">Escolha o prazo de entrega.</div>
+                </div>
+                <div class="col-md-4">
                   <label for="cor" class="form-label">Cor</label>
                   <input type="text" class="form-control" id="cor" name="cor" maxlength="20" placeholder="Ex.: A2" list="cores-vita">
                   <datalist id="cores-vita">
@@ -81,12 +91,7 @@
                     <option value="D2"><option value="D3"><option value="D4"><option value="BL1"><option value="BL2">
                   </datalist>
                 </div>
-                <div class="col-md-4">
-                  <label for="prazo" class="form-label">Prazo de entrega</label>
-                  <input type="date" class="form-control" id="prazo" name="prazo" required>
-                  <div class="invalid-feedback">Informe o prazo.</div>
-                </div>
-                <div class="col-md-5">
+                <div class="col-md-8">
                   <label for="tecnico_responsavel_id" class="form-label">Técnico responsável</label>
                   <select class="form-select" id="tecnico_responsavel_id" name="tecnico_responsavel_id"></select>
                 </div>

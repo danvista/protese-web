@@ -7,6 +7,7 @@ import {
 import { esc, formatarMoeda, lerMoeda, moedaParaCampo, normalizarBusca } from '../formatos.js';
 import { ligarFormulario, limparFormulario, modal, mostrarToast, mostrarAlerta, esconderAlerta } from '../ui.js';
 import { agruparPorCategoria } from '../categorias.js';
+import { ligarCalendario, ATALHOS_PRAZO, ATALHOS_PASSADO, paraIso, hoje, somarDias } from '../calendario.js';
 import { STATUS, PROXIMA_ETAPA, ABERTAS, badgeStatus, estaAtrasada } from '../status.js';
 
 const { perfil, laboratorio } = await iniciarAreaLogada('ordens');
@@ -157,6 +158,9 @@ const modeloItem = el('modelo-item');
 let ordemAtual = null;
 let precosDentista = new Map();
 let prazoTocado = false;
+
+ligarCalendario(form.elements.entrada, { atalhos: ATALHOS_PASSADO, maximo: 'hoje', placeholder: 'Quando o trabalho chegou' });
+ligarCalendario(form.elements.prazo, { atalhos: ATALHOS_PRAZO, tomRelativo: true, placeholder: 'Escolha o dia da entrega' });
 let cadastrosCarregados = false;
 
 async function carregarCadastros() {
@@ -334,15 +338,10 @@ function sugerirPrazo() {
     ),
   );
   if (!dias) return;
-  const data = new Date();
-  data.setDate(data.getDate() + dias);
-  form.elements.prazo.value = paraCampoData(data);
+  form.elements.prazo.value = paraIso(somarDias(hoje(), dias));
 }
 
-function paraCampoData(data) {
-  const d = new Date(data);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+const paraCampoData = (data) => paraIso(new Date(data));
 
 corpoItens.addEventListener('input', atualizarTotais);
 corpoItens.addEventListener('change', atualizarTotais);
@@ -390,6 +389,7 @@ async function abrirOrdem(id = null) {
       el('painel-etapa').hidden = true;
       el('btn-nota').hidden = true;
       opcoesDentista();
+      form.elements.entrada.value = paraIso(hoje());
       adicionarItem();
       definirEdicao(true);
       return;
@@ -405,6 +405,7 @@ async function abrirOrdem(id = null) {
     form.elements.paciente.value = ordemAtual.paciente;
     form.elements.cor.value = ordemAtual.cor ?? '';
     form.elements.prazo.value = paraCampoData(ordemAtual.prazo_entrega);
+    form.elements.entrada.value = paraCampoData(ordemAtual.data_entrada);
     form.elements.tecnico_responsavel_id.value = ordemAtual.tecnico_responsavel_id ?? '';
     form.elements.observacoes.value = ordemAtual.observacoes ?? '';
     form.elements.desconto.value = Number(ordemAtual.desconto) ? moedaParaCampo(ordemAtual.desconto) : '';
@@ -478,6 +479,9 @@ ligarFormulario(form, {
   validacaoExtra: (f) => {
     const desconto = lerMoeda(f.elements.desconto.value);
     f.elements.desconto.setCustomValidity(desconto !== null && (Number.isNaN(desconto) || desconto < 0) ? 'inválido' : '');
+    const { entrada, prazo } = f.elements;
+    prazo.setCustomValidity(entrada.value && prazo.value && prazo.value < entrada.value ? 'antes da entrada' : '');
+    el('erro-prazo').textContent = prazo.validity.customError ? 'O prazo não pode ser antes da entrada.' : 'Escolha o prazo de entrega.';
   },
   aoEnviar: async (dados) => {
     const itens = [...corpoItens.querySelectorAll('.linha-item')]
@@ -507,6 +511,12 @@ ligarFormulario(form, {
       tecnico_responsavel_id: dados.tecnico_responsavel_id || null,
     };
     if (gestor) registro.desconto = lerMoeda(dados.desconto) || 0;
+    // Data de entrada: só grava se mudou (nova OS de hoje fica com a hora exata do lançamento)
+    const entradaOriginal = ordemAtual ? paraCampoData(ordemAtual.data_entrada) : paraIso(hoje());
+    if (dados.entrada !== entradaOriginal) {
+      const [ae, me, de] = dados.entrada.split('-').map(Number);
+      registro.data_entrada = new Date(ae, me - 1, de, 12).toISOString();
+    }
 
     const eraNova = !ordemAtual;
     const id = await salvarOrdem(registro, itens, ordemAtual?.id);

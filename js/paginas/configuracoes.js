@@ -35,7 +35,7 @@ try {
 
 if (!ehDono) {
   el('aviso-somente-dono').hidden = false;
-  form.querySelectorAll('input').forEach((c) => (c.disabled = true));
+  form.querySelectorAll('input, textarea').forEach((c) => (c.disabled = true));
   document.querySelectorAll('.so-dono').forEach((c) => (c.hidden = true));
 }
 
@@ -53,6 +53,7 @@ ligarFormulario(form, {
       telefone: dados.telefone.trim() || null,
       endereco: dados.endereco.trim() || null,
       cidade: dados.cidade.trim() || null,
+      dados_pagamento: dados.dados_pagamento.trim() || null,
     };
     await salvarLaboratorio(lab.id, registro);
     Object.assign(lab, registro);
