@@ -125,6 +125,25 @@ export async function salvarOrdem(dados, itens, id = null) {
   return ordemId;
 }
 
+/** Dados do painel: OS lançadas desde a data (para faturamento) + todas em aberto (para atrasos/entregas). */
+export async function dadosPainel(desde) {
+  const campos = `id, numero, paciente, status, data_entrada, prazo_entrega, data_entrega, valor_total,
+    dentista:dentistas(nome),
+    itens:itens_ordem_servico(quantidade, valor_total, servico:servicos(nome, categoria))`;
+  const [periodo, abertas] = await Promise.all([
+    supabase.from('ordens_servico').select(campos).gte('data_entrada', desde.toISOString()).limit(5000),
+    supabase
+      .from('ordens_servico')
+      .select(campos)
+      .in('status', ['RECEBIDO', 'EM_PRODUCAO', 'EM_PROVA', 'RETORNO', 'FINALIZADO'])
+      .order('prazo_entrega')
+      .limit(1000),
+  ]);
+  if (periodo.error) throw erroAmigavel(periodo.error);
+  if (abertas.error) throw erroAmigavel(abertas.error);
+  return { periodo: periodo.data, abertas: abertas.data };
+}
+
 export async function alterarStatusOrdem(id, status) {
   const { error } = await supabase.from('ordens_servico').update({ status }).eq('id', id);
   if (error) throw erroAmigavel(error);

@@ -160,7 +160,13 @@
   <template id="modelo-item">
     <tr class="linha-item">
       <td>
-        <select class="form-select form-select-sm" data-campo="servico_id" required aria-label="Serviço"></select>
+        <div class="dropdown seletor-servico">
+          <button type="button" class="form-select form-select-sm text-start" data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside" aria-expanded="false"
+                  data-rotulo aria-label="Escolher serviço">Escolher serviço...</button>
+          <div class="dropdown-menu seletor-menu shadow" data-menu></div>
+          <select data-campo="servico_id" required hidden aria-hidden="true" tabindex="-1"></select>
+        </div>
       </td>
       <td><input type="text" class="form-control form-control-sm" data-campo="dentes" placeholder="11, 21" maxlength="60" aria-label="Dentes"></td>
       <td><input type="number" class="form-control form-control-sm" data-campo="quantidade" min="1" max="99" value="1" required aria-label="Quantidade"></td>

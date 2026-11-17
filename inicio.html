@@ -8,16 +8,95 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="carregando">
+<body class="carregando pagina-painel">
   <header id="topo"></header>
   <div class="aviso-wrapper"><div id="aviso-assinatura" hidden role="status"></div></div>
 
   <main class="conteudo">
-    <h1 class="h3 mb-3">Olá, <span id="nome-usuario"></span>!</h1>
-    <div class="card">
-      <div class="card-body">
-        Sua conta está pronta. Nas próximas etapas, aqui vai aparecer o painel do dia: ordens que entram,
-        que saem e que estão atrasadas.
+    <!-- Destaque do mês -->
+    <section class="painel-hero mb-4">
+      <div class="hero-bolhas" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="row g-4 align-items-center position-relative">
+        <div class="col-lg-7">
+          <p class="hero-saudacao mb-1" id="saudacao"></p>
+          <h1 class="hero-titulo mb-2" id="hero-titulo">Carregando o painel...</h1>
+          <p class="hero-sub mb-0" id="hero-sub"></p>
+        </div>
+        <div class="col-lg-5 so-gestor">
+          <div class="hero-valor">
+            <span class="hero-rotulo" id="hero-rotulo-mes">Faturamento do mês</span>
+            <strong id="hero-faturamento" data-contador="0" data-moeda>R$ 0,00</strong>
+            <span class="hero-tendencia" id="hero-tendencia"></span>
+          </div>
+        </div>
+        <div class="col-lg-5 so-tecnico">
+          <div class="hero-valor">
+            <span class="hero-rotulo">Ordens em aberto</span>
+            <strong id="hero-abertas" data-contador="0">0</strong>
+            <span class="hero-tendencia" id="hero-atrasadas-txt"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Indicadores -->
+    <section class="grade-kpi mb-4" id="kpis"></section>
+
+    <div class="row g-4">
+      <!-- Faturamento por mês -->
+      <div class="col-xl-8 so-gestor">
+        <div class="card h-100 cartao-painel">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <h2 class="h6 mb-0 me-auto"><i class="bi bi-bar-chart-line text-primary"></i> Faturamento por mês</h2>
+              <span class="small text-secondary">últimos 6 meses</span>
+            </div>
+            <div class="grafico-barras" id="grafico-meses" role="img" aria-label="Faturamento dos últimos 6 meses"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entregas próximas -->
+      <div class="col-xl-4">
+        <div class="card h-100 cartao-painel">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <h2 class="h6 mb-0 me-auto"><i class="bi bi-calendar-check text-primary"></i> Próximas entregas</h2>
+              <a href="ordens.html" class="small">Ver todas</a>
+            </div>
+            <ul class="lista-entregas" id="entregas"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranking de dentistas -->
+      <div class="col-lg-6 so-gestor">
+        <div class="card h-100 cartao-painel">
+          <div class="card-body">
+            <h2 class="h6 mb-3"><i class="bi bi-trophy text-primary"></i> Dentistas que mais compraram no mês</h2>
+            <div id="ranking-dentistas" class="ranking"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Por categoria -->
+      <div class="col-lg-6 so-gestor">
+        <div class="card h-100 cartao-painel">
+          <div class="card-body">
+            <h2 class="h6 mb-3"><i class="bi bi-pie-chart text-primary"></i> Vendas por categoria no mês</h2>
+            <div id="ranking-categorias" class="ranking"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapas (técnico vê no lugar dos valores) -->
+      <div class="col-12">
+        <div class="card cartao-painel">
+          <div class="card-body">
+            <h2 class="h6 mb-3"><i class="bi bi-kanban text-primary"></i> Ordens em aberto por etapa</h2>
+            <div class="etapas" id="etapas"></div>
+          </div>
+        </div>
       </div>
     </div>
   </main>

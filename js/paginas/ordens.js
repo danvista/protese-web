@@ -179,20 +179,112 @@ function opcoesTecnico() {
 
 function opcoesServico(select, selecionado) {
   const ativos = servicos.filter((s) => s.ativo || s.id === selecionado);
-  const opcao = (s) => `<option value="${s.id}">${esc(s.nome)}</option>`;
-  const grupos = agruparPorCategoria(ativos);
-  // Uma categoria só (ou nenhuma): lista simples; várias: agrupa (ex.: barra de protocolo dentro de "Metal")
   select.innerHTML =
-    '<option value="">Selecione...</option>' +
-    (grupos.length < 2
-      ? ativos.map(opcao).join('')
-      : grupos.map(([cat, itens]) => `<optgroup label="${esc(cat)}">${itens.map(opcao).join('')}</optgroup>`).join(''));
+    '<option value="">Selecione...</option>' + ativos.map((s) => `<option value="${s.id}">${esc(s.nome)}</option>`).join('');
   if (selecionado) select.value = selecionado;
 }
+
+// ---------- Seletor de serviço em 2 passos: categoria → serviço ----------
+
+function servicosDisponiveis(linha) {
+  const atual = linha.querySelector('[data-campo="servico_id"]').value;
+  return servicos.filter((s) => s.ativo || s.id === atual);
+}
+
+function atualizarRotulo(linha) {
+  const botao = linha.querySelector('[data-rotulo]');
+  const servico = servicos.find((s) => s.id === linha.querySelector('[data-campo="servico_id"]').value);
+  botao.innerHTML = servico
+    ? `${servico.categoria ? `<span class="text-secondary">${esc(servico.categoria)} ›</span> ` : ''}${esc(servico.nome)}`
+    : '<span class="text-secondary">Escolher serviço...</span>';
+}
+
+/** Desenha o menu: sem categoria escolhida mostra as categorias; com categoria, os serviços dela. */
+function desenharMenu(linha, categoria = null) {
+  const menu = linha.querySelector('[data-menu]');
+  const grupos = agruparPorCategoria(servicosDisponiveis(linha));
+  const atual = linha.querySelector('[data-campo="servico_id"]').value;
+
+  if (!grupos.length) {
+    menu.innerHTML = '<div class="px-3 py-2 text-secondary small">Nenhum serviço ativo. Cadastre em Serviços.</div>';
+    return;
+  }
+  // Com uma categoria só, vai direto para os serviços
+  if (grupos.length === 1) categoria = grupos[0][0];
+
+  if (categoria === null) {
+    menu.innerHTML =
+      '<div class="dropdown-header">Categorias</div>' +
+      grupos
+        .map(
+          ([cat, itens]) => `
+          <button type="button" class="dropdown-item d-flex align-items-center gap-2" data-categoria="${esc(cat)}">
+            <i class="bi bi-folder2"></i><span class="me-auto">${esc(cat)}</span>
+            <span class="badge rounded-pill text-bg-light">${itens.length}</span><i class="bi bi-chevron-right small"></i>
+          </button>`,
+        )
+        .join('');
+  } else {
+    const itens = grupos.find(([cat]) => cat === categoria)?.[1] ?? [];
+    menu.innerHTML =
+      (grupos.length > 1
+        ? `<button type="button" class="dropdown-item text-primary small" data-voltar><i class="bi bi-chevron-left"></i> Categorias</button>
+           <div class="dropdown-divider my-1"></div>`
+        : '') +
+      `<div class="dropdown-header">${esc(categoria)}</div>` +
+      itens
+        .map(
+          (s) => `
+          <button type="button" class="dropdown-item d-flex justify-content-between gap-3 ${s.id === atual ? 'active' : ''}" data-servico="${s.id}">
+            <span>${esc(s.nome)}</span>
+            ${gestor ? `<span class="small ${s.id === atual ? '' : 'text-secondary'}">${formatarMoeda(precoDoServico(s.id))}</span>` : ''}
+          </button>`,
+        )
+        .join('');
+  }
+  menu.classList.remove('menu-trocando');
+  void menu.offsetWidth; // reinicia a animação
+  menu.classList.add('menu-trocando');
+}
+
+// Esc fecha só o menu de serviços, não a janela da OS inteira
+corpoItens.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const aberto = e.target.closest('.linha-item')?.querySelector('[data-menu].show') ?? corpoItens.querySelector('[data-menu].show');
+  if (!aberto) return;
+  e.stopPropagation();
+  const botao = aberto.closest('.seletor-servico').querySelector('[data-rotulo]');
+  window.bootstrap.Dropdown.getOrCreateInstance(botao).hide();
+  botao.focus();
+});
+
+corpoItens.addEventListener('show.bs.dropdown', (e) => desenharMenu(e.target.closest('.linha-item')));
+
+corpoItens.addEventListener('click', (e) => {
+  const linha = e.target.closest('.linha-item');
+  if (!linha) return;
+  const cat = e.target.closest('[data-categoria]');
+  if (cat) return desenharMenu(linha, cat.dataset.categoria);
+  if (e.target.closest('[data-voltar]')) return desenharMenu(linha);
+  const opcao = e.target.closest('[data-servico]');
+  if (opcao) {
+    const select = linha.querySelector('[data-campo="servico_id"]');
+    select.value = opcao.dataset.servico;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    atualizarRotulo(linha);
+    window.bootstrap.Dropdown.getOrCreateInstance(linha.querySelector('[data-rotulo]')).hide();
+    linha.querySelector('[data-campo="dentes"]').focus();
+  }
+});
 
 function adicionarItem(item = null) {
   const linha = modeloItem.content.firstElementChild.cloneNode(true);
   opcoesServico(linha.querySelector('[data-campo="servico_id"]'), item?.servico_id);
+  atualizarRotulo(linha);
+  // Menu "flutuante" (fixed) para não ser cortado pela tabela/rolagem do modal
+  new window.bootstrap.Dropdown(linha.querySelector('[data-rotulo]'), {
+    popperConfig: (padrao) => ({ ...padrao, strategy: 'fixed' }),
+  });
   linha.querySelector('[data-campo="dentes"]').value = item?.dentes ?? '';
   linha.querySelector('[data-campo="quantidade"]').value = item?.quantidade ?? 1;
   // Item já salvo mantém o preço com que foi lançado
@@ -261,7 +353,12 @@ corpoItens.addEventListener('click', (e) => {
   linha.classList.add('item-saindo');
   linha.addEventListener('animationend', () => { linha.remove(); atualizarTotais(); }, { once: true });
 });
-el('btn-add-item').addEventListener('click', () => adicionarItem().querySelector('select').focus());
+el('btn-add-item').addEventListener('click', () => {
+  // Já abre a lista de categorias da linha nova
+  // (depois do clique terminar, senão o Bootstrap fecha o menu na hora)
+  const botao = adicionarItem().querySelector('[data-rotulo]');
+  setTimeout(() => window.bootstrap.Dropdown.getOrCreateInstance(botao).show(), 0);
+});
 form.elements.prazo.addEventListener('input', () => (prazoTocado = true));
 form.elements.desconto.addEventListener('input', atualizarTotais);
 
