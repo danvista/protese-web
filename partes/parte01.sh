@@ -1,0 +1,182 @@
+mkdir -p "."
+cat > "ordens.html" <<'FIM_ARQUIVO_PW'
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ordens de serviço | Protese Web</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="carregando">
+  <header id="topo"></header>
+  <div class="aviso-wrapper"><div id="aviso-assinatura" hidden role="status"></div></div>
+
+  <main class="conteudo entrada">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <div class="me-auto">
+        <h1 class="h3 mb-0">Ordens de serviço</h1>
+        <p class="text-secondary small mb-0" id="resumo"></p>
+      </div>
+      <button id="btn-nova" class="btn btn-primary btn-animado" type="button" hidden>
+        <i class="bi bi-plus-lg"></i> Nova OS
+      </button>
+    </div>
+
+    <!-- Filtro por etapa -->
+    <div class="filtros-status mb-3" id="filtros" role="tablist" aria-label="Filtrar por etapa"></div>
+
+    <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+      <div class="input-group busca">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input id="busca" type="search" class="form-control" placeholder="Buscar por nº, paciente ou dentista" aria-label="Buscar ordem">
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="so-atrasadas">
+        <label class="form-check-label" for="so-atrasadas">Só atrasadas</label>
+      </div>
+    </div>
+
+    <div id="lista" class="grade-os"></div>
+    <div id="vazio" class="estado-vazio" hidden>
+      <i class="bi bi-clipboard2"></i>
+      <p class="mb-0" id="vazio-texto"></p>
+    </div>
+  </main>
+
+  <!-- Modal da OS -->
+  <div class="modal fade" id="modal-os" tabindex="-1" aria-labelledby="titulo-os" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <form id="form-os" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-os">Nova ordem de serviço</h2>
+          <span id="status-atual" class="ms-3"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+          <div id="alerta-os" hidden role="alert"></div>
+
+          <div class="row g-4">
+            <!-- Dados da OS -->
+            <div class="col-lg-8">
+              <div class="row g-3">
+                <div class="col-md-7">
+                  <label for="dentista_id" class="form-label">Dentista</label>
+                  <select class="form-select" id="dentista_id" name="dentista_id" required></select>
+                  <div class="invalid-feedback">Escolha o dentista.</div>
+                </div>
+                <div class="col-md-5">
+                  <label for="paciente" class="form-label">Paciente</label>
+                  <input type="text" class="form-control" id="paciente" name="paciente" maxlength="120" required>
+                  <div class="invalid-feedback">Informe o paciente.</div>
+                </div>
+                <div class="col-md-3">
+                  <label for="cor" class="form-label">Cor</label>
+                  <input type="text" class="form-control" id="cor" name="cor" maxlength="20" placeholder="Ex.: A2" list="cores-vita">
+                  <datalist id="cores-vita">
+                    <option value="A1"><option value="A2"><option value="A3"><option value="A3,5"><option value="A4">
+                    <option value="B1"><option value="B2"><option value="B3"><option value="B4">
+                    <option value="C1"><option value="C2"><option value="C3"><option value="C4">
+                    <option value="D2"><option value="D3"><option value="D4"><option value="BL1"><option value="BL2">
+                  </datalist>
+                </div>
+                <div class="col-md-4">
+                  <label for="prazo" class="form-label">Prazo de entrega</label>
+                  <input type="date" class="form-control" id="prazo" name="prazo" required>
+                  <div class="invalid-feedback">Informe o prazo.</div>
+                </div>
+                <div class="col-md-5">
+                  <label for="tecnico_responsavel_id" class="form-label">Técnico responsável</label>
+                  <select class="form-select" id="tecnico_responsavel_id" name="tecnico_responsavel_id"></select>
+                </div>
+              </div>
+
+              <!-- Itens -->
+              <div class="d-flex align-items-center mt-4 mb-2">
+                <h3 class="h6 mb-0 me-auto">Serviços</h3>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-item">
+                  <i class="bi bi-plus-lg"></i> Adicionar serviço
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="table align-middle mb-2 tabela-itens">
+                  <thead>
+                    <tr>
+                      <th>Serviço</th>
+                      <th style="width: 9rem">Dentes</th>
+                      <th style="width: 6rem">Qtd.</th>
+                      <th class="text-end so-gestor" style="width: 8rem">Valor</th>
+                      <th style="width: 2.5rem"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="itens"></tbody>
+                </table>
+              </div>
+
+              <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                  <label for="observacoes" class="form-label">Observações</label>
+                  <textarea class="form-control" id="observacoes" name="observacoes" rows="2" maxlength="1000"></textarea>
+                </div>
+                <div class="col-md-4 so-gestor">
+                  <label for="desconto" class="form-label">Desconto</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="text" class="form-control" id="desconto" name="desconto" inputmode="decimal" placeholder="0,00">
+                  </div>
+                  <div class="text-end mt-2">
+                    <span class="text-secondary small">Total</span>
+                    <div class="fs-4 fw-bold" id="total-os">R$ 0,00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Etapa e histórico (só ao editar) -->
+            <div class="col-lg-4" id="painel-etapa" hidden>
+              <div class="card cartao-suave">
+                <div class="card-body">
+                  <h3 class="h6">Etapa</h3>
+FIM_ARQUIVO_PW
+cat >> "ordens.html" <<'FIM_ARQUIVO_PW'
+                  <select class="form-select mb-2" id="status" aria-label="Etapa da ordem"></select>
+                  <button type="button" class="btn btn-success w-100 btn-animado" id="btn-avancar"></button>
+                  <hr>
+                  <h3 class="h6">Histórico</h3>
+                  <ol class="linha-tempo" id="historico"></ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="submit" class="btn btn-primary btn-animado" id="btn-salvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <template id="modelo-item">
+    <tr class="linha-item">
+      <td>
+        <select class="form-select form-select-sm" data-campo="servico_id" required aria-label="Serviço"></select>
+      </td>
+      <td><input type="text" class="form-control form-control-sm" data-campo="dentes" placeholder="11, 21" maxlength="60" aria-label="Dentes"></td>
+      <td><input type="number" class="form-control form-control-sm" data-campo="quantidade" min="1" max="99" value="1" required aria-label="Quantidade"></td>
+      <td class="text-end so-gestor text-nowrap" data-campo="valor"></td>
+      <td class="text-end">
+        <button type="button" class="btn btn-sm btn-link text-danger p-0" data-remover aria-label="Remover serviço"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/paginas/ordens.js"></script>
+</body>
+</html>
+FIM_ARQUIVO_PW
