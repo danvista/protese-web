@@ -32,7 +32,7 @@ export async function exigirVisitante() {
 export async function carregarPerfil(usuarioId) {
   const [usuario, laboratorio] = await Promise.all([
     supabase.from('usuarios').select('id, nome, email, papel').eq('id', usuarioId).single(),
-    supabase.from('laboratorios').select('id, nome, status_assinatura, teste_ate').single(),
+    supabase.from('laboratorios').select('id, nome, logo_url, status_assinatura, teste_ate').single(),
   ]);
   return { perfil: usuario.data, laboratorio: laboratorio.data };
 }

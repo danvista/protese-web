@@ -11,6 +11,7 @@ const MENU = [
   { id: 'ordens', rotulo: 'Ordens de serviço', icone: 'bi-clipboard2-pulse', pagina: 'ordens.html' },
   { id: 'dentistas', rotulo: 'Dentistas', icone: 'bi-person-vcard', pagina: 'dentistas.html' },
   { id: 'servicos', rotulo: 'Serviços', icone: 'bi-tools', pagina: 'servicos.html' },
+  { id: 'configuracoes', rotulo: 'Configurações', icone: 'bi-gear', pagina: 'configuracoes.html', soGestor: true },
 ];
 
 /**
@@ -35,7 +36,7 @@ function montarTopo(perfil, laboratorio, paginaAtiva) {
     <nav class="navbar navbar-expand-md bg-white border-bottom">
       <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="inicio.html">
-          <i class="bi bi-box-seam text-primary"></i> <span data-nome-lab></span>
+          <img data-logo-lab alt="" hidden> <i class="bi bi-box-seam text-primary" data-icone-lab></i> <span data-nome-lab></span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
                 aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menu">
@@ -43,7 +44,7 @@ function montarTopo(perfil, laboratorio, paginaAtiva) {
         </button>
         <div class="collapse navbar-collapse" id="menuPrincipal">
           <ul class="navbar-nav me-auto">
-            ${MENU.map(
+            ${MENU.filter((item) => !item.soGestor || ehGestor(perfil)).map(
               (item) => `
               <li class="nav-item">
                 <a class="nav-link ${item.id === paginaAtiva ? 'active fw-semibold' : ''}" href="${item.pagina}"
@@ -65,6 +66,12 @@ function montarTopo(perfil, laboratorio, paginaAtiva) {
 
   // textContent: dados do usuário nunca entram como HTML
   topo.querySelector('[data-nome-lab]').textContent = laboratorio?.nome ?? NOME_SISTEMA;
+  if (laboratorio?.logo_url) {
+    const logo = topo.querySelector('[data-logo-lab]');
+    logo.src = laboratorio.logo_url;
+    logo.hidden = false;
+    topo.querySelector('[data-icone-lab]').hidden = true;
+  }
   topo.querySelector('[data-nome-usuario]').textContent = perfil?.nome ?? '';
   topo.querySelector('[data-sair]').addEventListener('click', sair);
 }

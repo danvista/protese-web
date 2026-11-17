@@ -388,6 +388,7 @@ async function abrirOrdem(id = null) {
       el('titulo-os').textContent = 'Nova ordem de serviço';
       el('status-atual').innerHTML = '';
       el('painel-etapa').hidden = true;
+      el('btn-nota').hidden = true;
       opcoesDentista();
       adicionarItem();
       definirEdicao(true);
@@ -396,6 +397,8 @@ async function abrirOrdem(id = null) {
 
     ordemAtual = await obterOrdem(id);
     el('titulo-os').textContent = `OS #${ordemAtual.numero}`;
+    el('btn-nota').href = `nota.html?id=${encodeURIComponent(ordemAtual.id)}`;
+    el('btn-nota').hidden = false;
     el('status-atual').innerHTML = badgeStatus(ordemAtual.status);
     opcoesDentista(ordemAtual.dentista_id);
     form.elements.dentista_id.value = ordemAtual.dentista_id;
