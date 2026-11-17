@@ -1,5 +1,3 @@
-mkdir -p "js"
-cat > "js/layout.js" <<'FIM_ARQUIVO_PW'
 // Monta o topo da área logada e o aviso de teste/assinatura.
 // Uso em cada página logada:  const { perfil, laboratorio } = await iniciarAreaLogada('inicio');
 import { exigirLogin, carregarPerfil, sair, ehGestor } from './auth.js';
@@ -101,33 +99,3 @@ function montarAvisoAssinatura(laboratorio) {
     aviso.hidden = false;
   }
 }
-FIM_ARQUIVO_PW
-mkdir -p "js/paginas"
-cat > "js/paginas/cadastro.js" <<'FIM_ARQUIVO_PW'
-import { exigirVisitante, cadastrar } from '../auth.js';
-import { ligarFormulario, ligarAlternarSenha, validarSenhasIguais } from '../ui.js';
-
-await exigirVisitante();
-
-ligarAlternarSenha();
-ligarFormulario(document.getElementById('form-cadastro'), {
-  alerta: document.getElementById('alerta'),
-  validacaoExtra: validarSenhasIguais,
-  aoEnviar: async ({ nome, nomeLaboratorio, email, senha }) => {
-    const { precisaConfirmarEmail } = await cadastrar({
-      nome: nome.trim(),
-      nomeLaboratorio: nomeLaboratorio.trim(),
-      email: email.trim(),
-      senha,
-    });
-
-    if (!precisaConfirmarEmail) {
-      location.replace('inicio.html');
-      return;
-    }
-    document.getElementById('email-enviado').textContent = email.trim();
-    document.getElementById('etapa-formulario').hidden = true;
-    document.getElementById('sucesso').hidden = false;
-  },
-});
-FIM_ARQUIVO_PW

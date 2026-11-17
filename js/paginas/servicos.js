@@ -1,29 +1,3 @@
-mkdir -p "js/paginas"
-cat > "js/paginas/redefinir-senha.js" <<'FIM_ARQUIVO_PW'
-import { obterSessao, redefinirSenha } from '../auth.js';
-import { ligarFormulario, ligarAlternarSenha, validarSenhasIguais } from '../ui.js';
-
-// O supabase-js lê o token do link de recuperação na URL e abre a sessão.
-const sessao = await obterSessao();
-document.getElementById('verificando').hidden = true;
-
-if (!sessao) {
-  document.getElementById('link-invalido').hidden = false;
-} else {
-  document.getElementById('etapa-formulario').hidden = false;
-  ligarAlternarSenha();
-  ligarFormulario(document.getElementById('form-redefinir'), {
-    alerta: document.getElementById('alerta'),
-    validacaoExtra: validarSenhasIguais,
-    aoEnviar: async ({ senha }) => {
-      await redefinirSenha(senha);
-      location.replace('inicio.html');
-    },
-  });
-}
-FIM_ARQUIVO_PW
-mkdir -p "js/paginas"
-cat > "js/paginas/servicos.js" <<'FIM_ARQUIVO_PW'
 import { iniciarAreaLogada } from '../layout.js';
 import { listarServicos, salvarServico } from '../dados.js';
 import { esc, formatarMoeda, lerMoeda, moedaParaCampo, normalizarBusca } from '../formatos.js';
@@ -141,11 +115,3 @@ ligarFormulario(form, {
 });
 
 await carregar();
-FIM_ARQUIVO_PW
-mkdir -p "js"
-cat > "js/supabase.js" <<'FIM_ARQUIVO_PW'
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-FIM_ARQUIVO_PW

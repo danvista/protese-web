@@ -1,0 +1,68 @@
+:root {
+  --cor-fundo: #f4f6f8;
+}
+
+body {
+  background: var(--cor-fundo);
+  min-height: 100vh;
+}
+
+/* Evita "piscar" a página logada antes de confirmar a sessão */
+body.carregando {
+  visibility: hidden;
+}
+
+/* ---------- Telas de autenticação ---------- */
+.auth-pagina {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 26rem;
+}
+
+.auth-marca {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.auth-marca .bi {
+  color: var(--bs-primary);
+}
+
+/* ---------- Área logada ---------- */
+.conteudo {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ---------- Listas ---------- */
+.busca {
+  max-width: 22rem;
+}
+
+.col-acoes {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.texto-curto {
+  max-width: 18rem;
+}
+
+.preco-especial {
+  max-width: 10rem;
+  margin-left: auto;
+}
+
+.aviso-wrapper {
+  max-width: 80rem;
+  margin: 1rem auto 0;
+  padding: 0 1.5rem;
+}

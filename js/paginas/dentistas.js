@@ -1,5 +1,3 @@
-mkdir -p "js/paginas"
-cat > "js/paginas/dentistas.js" <<'FIM_ARQUIVO_PW'
 import { iniciarAreaLogada } from '../layout.js';
 import { listarDentistas, salvarDentista, listarServicos, listarPrecosDentista, salvarPrecosDentista } from '../dados.js';
 import { esc, formatarMoeda, formatarTelefone, lerMoeda, moedaParaCampo, normalizarBusca } from '../formatos.js';
@@ -198,44 +196,3 @@ ligarFormulario(formPrecos, {
 });
 
 await carregar();
-FIM_ARQUIVO_PW
-mkdir -p "js/paginas"
-cat > "js/paginas/entrar.js" <<'FIM_ARQUIVO_PW'
-import { exigirVisitante, entrar } from '../auth.js';
-import { ligarFormulario, ligarAlternarSenha } from '../ui.js';
-
-await exigirVisitante();
-
-ligarAlternarSenha();
-ligarFormulario(document.getElementById('form-entrar'), {
-  alerta: document.getElementById('alerta'),
-  aoEnviar: async ({ email, senha }) => {
-    await entrar(email.trim(), senha);
-    location.replace('inicio.html');
-  },
-});
-FIM_ARQUIVO_PW
-mkdir -p "js/paginas"
-cat > "js/paginas/inicio.js" <<'FIM_ARQUIVO_PW'
-import { iniciarAreaLogada } from '../layout.js';
-
-const { perfil } = await iniciarAreaLogada('inicio');
-
-document.getElementById('nome-usuario').textContent = perfil?.nome ?? '';
-FIM_ARQUIVO_PW
-mkdir -p "js/paginas"
-cat > "js/paginas/recuperar-senha.js" <<'FIM_ARQUIVO_PW'
-import { exigirVisitante, enviarLinkRecuperacao } from '../auth.js';
-import { ligarFormulario } from '../ui.js';
-
-await exigirVisitante();
-
-ligarFormulario(document.getElementById('form-recuperar'), {
-  alerta: document.getElementById('alerta'),
-  aoEnviar: async ({ email }) => {
-    await enviarLinkRecuperacao(email.trim());
-    document.getElementById('etapa-formulario').hidden = true;
-    document.getElementById('sucesso').hidden = false;
-  },
-});
-FIM_ARQUIVO_PW

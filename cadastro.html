@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Criar conta | Protese Web</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <main class="auth-pagina">
+    <div class="card shadow-sm auth-card">
+      <div class="card-body p-4">
+        <div class="auth-marca mb-1"><i class="bi bi-box-seam"></i> Protese Web</div>
+
+        <!-- Mostrado depois do cadastro, quando falta confirmar o e-mail -->
+        <div id="sucesso" hidden>
+          <p class="text-secondary">Quase lá!</p>
+          <div class="alert alert-success">
+            Enviamos um link de confirmação para <strong id="email-enviado"></strong>.
+            Abra seu e-mail e clique no link para ativar sua conta.
+          </div>
+          <p class="text-center small mb-0"><a href="entrar.html">Voltar para o login</a></p>
+        </div>
+
+        <div id="etapa-formulario">
+          <p class="text-secondary mb-4">Crie a conta do seu laboratório. 30 dias grátis, sem cartão.</p>
+
+          <div id="alerta" hidden role="alert"></div>
+
+          <form id="form-cadastro" class="vstack gap-3" novalidate>
+            <div>
+              <label for="nome" class="form-label">Seu nome</label>
+              <input type="text" class="form-control" id="nome" name="nome" autocomplete="name" maxlength="120" required>
+              <div class="invalid-feedback">Informe seu nome.</div>
+            </div>
+
+            <div>
+              <label for="nomeLaboratorio" class="form-label">Nome do laboratório</label>
+              <input type="text" class="form-control" id="nomeLaboratorio" name="nomeLaboratorio" autocomplete="organization" maxlength="120" required>
+              <div class="invalid-feedback">Informe o nome do laboratório.</div>
+            </div>
+
+            <div>
+              <label for="email" class="form-label">E-mail</label>
+              <input type="email" class="form-control" id="email" name="email" autocomplete="email" required>
+              <div class="invalid-feedback">Informe um e-mail válido.</div>
+            </div>
+
+            <div>
+              <label for="senha" class="form-label">Senha</label>
+              <div class="input-group has-validation">
+                <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password" minlength="8" required>
+                <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <div class="invalid-feedback">A senha precisa ter pelo menos 8 caracteres.</div>
+              </div>
+            </div>
+
+            <div>
+              <label for="confirmacao" class="form-label">Confirme a senha</label>
+              <input type="password" class="form-control" id="confirmacao" name="confirmacao" autocomplete="new-password" required>
+              <div class="invalid-feedback">As senhas não conferem.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Criar conta</button>
+          </form>
+
+          <p class="text-center text-secondary small mt-4 mb-0">
+            Já tem conta? <a href="entrar.html">Entrar</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/paginas/cadastro.js"></script>
+</body>
+</html>
