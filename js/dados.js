@@ -26,7 +26,7 @@ function erroAmigavel(erro, mensagensUnicas = {}) {
 export async function listarServicos() {
   const { data, error } = await supabase
     .from('servicos')
-    .select('id, nome, descricao, preco_padrao, prazo_padrao_dias, ativo')
+    .select('id, nome, categoria, descricao, preco_padrao, prazo_padrao_dias, ativo')
     .order('nome');
   if (error) throw erroAmigavel(error);
   return data;

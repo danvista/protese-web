@@ -6,6 +6,7 @@ import {
 } from '../dados.js';
 import { esc, formatarMoeda, lerMoeda, moedaParaCampo, normalizarBusca } from '../formatos.js';
 import { ligarFormulario, limparFormulario, modal, mostrarToast, mostrarAlerta, esconderAlerta } from '../ui.js';
+import { agruparPorCategoria } from '../categorias.js';
 import { STATUS, PROXIMA_ETAPA, ABERTAS, badgeStatus, estaAtrasada } from '../status.js';
 
 const { perfil, laboratorio } = await iniciarAreaLogada('ordens');
@@ -178,7 +179,14 @@ function opcoesTecnico() {
 
 function opcoesServico(select, selecionado) {
   const ativos = servicos.filter((s) => s.ativo || s.id === selecionado);
-  select.innerHTML = '<option value="">Selecione...</option>' + ativos.map((s) => `<option value="${s.id}">${esc(s.nome)}</option>`).join('');
+  const opcao = (s) => `<option value="${s.id}">${esc(s.nome)}</option>`;
+  const grupos = agruparPorCategoria(ativos);
+  // Uma categoria só (ou nenhuma): lista simples; várias: agrupa (ex.: barra de protocolo dentro de "Metal")
+  select.innerHTML =
+    '<option value="">Selecione...</option>' +
+    (grupos.length < 2
+      ? ativos.map(opcao).join('')
+      : grupos.map(([cat, itens]) => `<optgroup label="${esc(cat)}">${itens.map(opcao).join('')}</optgroup>`).join(''));
   if (selecionado) select.value = selecionado;
 }
 

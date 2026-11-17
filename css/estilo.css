@@ -444,3 +444,27 @@ body.carregando {
   border-radius: 50%;
   box-shadow: 0 0 0 3px #fff;
 }
+
+/* Cabeçalho de grupo (categoria) nas tabelas */
+.table .linha-categoria th {
+  background: #f6f7fe;
+  color: var(--cor-primaria);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom-color: #e4e7f7;
+}
+
+.linha-categoria .contador {
+  display: inline-block;
+  min-width: 1.3rem;
+  margin-left: 0.3rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.1);
+  font-size: 0.7rem;
+  text-align: center;
+}
