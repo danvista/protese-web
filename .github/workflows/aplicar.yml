@@ -13,7 +13,7 @@ jobs:
         run: |
           printf ' \n' >> partes/p2.patch
           git apply partes/p1.patch partes/p2.patch
-          git rm -rq partes .github/workflows/aplicar.yml
+          git rm -rqf partes .github/workflows/aplicar.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
