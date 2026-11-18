@@ -1,7 +1,11 @@
 import { iniciarAreaLogada, somenteLeitura } from '../layout.js';
 import { obterLaboratorio, salvarLaboratorio, enviarLogo, removerLogo } from '../dados.js';
 import { formatarTelefone } from '../formatos.js';
-import { ligarFormulario, preencherFormulario, mostrarToast, mostrarAlerta, esconderAlerta, carregandoBotao } from '../ui.js';
+import {
+  ligarFormulario, preencherFormulario, mostrarToast, mostrarAlerta, esconderAlerta, carregandoBotao,
+  validarSenhasIguais, limparFormulario,
+} from '../ui.js';
+import { redefinirSenha } from '../auth.js';
 
 const { perfil, laboratorio: labSessao } = await iniciarAreaLogada('configuracoes');
 const el = (id) => document.getElementById(id);
@@ -95,4 +99,59 @@ el('btn-remover-logo').addEventListener('click', async () => {
   } catch (erro) {
     mostrarAlerta(el('alerta-logo'), 'danger', erro.message);
   }
+});
+
+// ---------- Abas (o endereço guarda a aba: configuracoes.html#aparencia) ----------
+const ABAS = { laboratorio: 'aba-laboratorio', aparencia: 'aba-aparencia', conta: 'aba-conta' };
+const abaInicial = ABAS[location.hash.slice(1)];
+if (abaInicial) window.bootstrap.Tab.getOrCreateInstance(el(abaInicial)).show();
+document.querySelectorAll('#abas [data-bs-toggle="pill"]').forEach((botao) => {
+  botao.addEventListener('shown.bs.tab', () => {
+    const nome = Object.keys(ABAS).find((k) => ABAS[k] === botao.id);
+    history.replaceState(null, '', `#${nome}`);
+  });
+});
+
+// ---------- Aparência (fica salva neste navegador, vale só para a pessoa) ----------
+const formAparencia = el('form-aparencia');
+const Aparencia = window.AparenciaPW;
+
+function marcarAparencia() {
+  const pref = Aparencia.ler();
+  for (const nome of ['modo', 'cor', 'fonte']) {
+    const opcao = formAparencia.querySelector(`input[name="${nome}"][value="${pref[nome]}"]`);
+    if (opcao) opcao.checked = true;
+  }
+  formAparencia.elements.animacoes.checked = pref.animacoes;
+}
+
+formAparencia.addEventListener('change', (e) => {
+  const campo = e.target;
+  if (campo.name === 'animacoes') Aparencia.salvar({ animacoes: campo.checked });
+  else if (campo.type === 'radio') Aparencia.salvar({ [campo.name]: campo.value });
+});
+
+el('btn-tema-padrao').addEventListener('click', () => {
+  Aparencia.salvar({ ...Aparencia.PADRAO });
+  marcarAparencia();
+  mostrarToast('Aparência padrão restaurada.');
+});
+
+marcarAparencia();
+
+// ---------- Minha conta ----------
+const NOMES_PAPEL = { DONO: 'Dono do laboratório', GERENTE: 'Gerente', TECNICO: 'Técnico' };
+el('conta-nome').textContent = perfil?.nome ?? '—';
+el('conta-email').textContent = perfil?.email ?? '—';
+el('conta-papel').textContent = NOMES_PAPEL[perfil?.papel] ?? perfil?.papel ?? '—';
+
+const formSenha = el('form-senha');
+ligarFormulario(formSenha, {
+  alerta: el('alerta-senha'),
+  validacaoExtra: validarSenhasIguais,
+  aoEnviar: async ({ senha }) => {
+    await redefinirSenha(senha);
+    limparFormulario(formSenha, el('alerta-senha'));
+    mostrarToast('Senha alterada.');
+  },
 });

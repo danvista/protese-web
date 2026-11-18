@@ -12,7 +12,7 @@ const MENU = [
   { id: 'dentistas', rotulo: 'Dentistas', icone: 'bi-person-vcard', pagina: 'dentistas.html' },
   { id: 'servicos', rotulo: 'Serviços', icone: 'bi-tools', pagina: 'servicos.html' },
   { id: 'financeiro', rotulo: 'Financeiro', icone: 'bi-cash-coin', pagina: 'financeiro.html', soGestor: true },
-  { id: 'configuracoes', rotulo: 'Configurações', icone: 'bi-gear', pagina: 'configuracoes.html', soGestor: true },
+  { id: 'configuracoes', rotulo: 'Configurações', icone: 'bi-gear', pagina: 'configuracoes.html' },
 ];
 
 /**
@@ -34,7 +34,7 @@ export async function iniciarAreaLogada(paginaAtiva) {
 function montarTopo(perfil, laboratorio, paginaAtiva) {
   const topo = document.getElementById('topo');
   topo.innerHTML = `
-    <nav class="navbar navbar-expand-md bg-white border-bottom">
+    <nav class="navbar navbar-expand-md bg-body border-bottom">
       <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="inicio.html">
           <img data-logo-lab alt="" hidden> <i class="bi bi-box-seam text-primary" data-icone-lab></i> <span data-nome-lab></span>
